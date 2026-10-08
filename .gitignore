@@ -1,0 +1,9 @@
+# 本地真实账号备份（含明文税号 / 密码）—— 绝不入库
+accounts.local.json
+
+# WorkBuddy 项目数据与工作记忆（历史日志里记过明文密码）
+.workbuddy/
+
+node_modules/
+*.log
+*.tmp
