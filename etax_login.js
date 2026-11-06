@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         深圳/浙江税务-一键填表登录（代账版）
 // @namespace    http://tampermonkey.net/
-// @version      16.4
+// @version      16.5
 // @license      MIT
 // @description  电子税务局 tpass 登录页一键填写（税号/手机号/密码）并提交。支持上百家企业：搜索/简拼、双击快捷键、在线授权、名单备份还原。账号只存本机浏览器，验证码仍需人工点选。
 // @match        https://tpass.shenzhen.chinatax.gov.cn:8443/*
@@ -20,6 +20,8 @@
     'use strict';
 
     /* ===================== 配置 ===================== */
+    // 面板标题栏显示这个版本；发布新版本时同步改脚本头 @version（smoke 会校验两者一致）
+    const VERSION = '16.5';
     const STORE_KEY = 'etax_accounts_v1';             // 公司名单（GM_setValue）
     const PENDING_KEY = 'etax_pending_autofill';      // 跨站跳转待填标记
     const SNAP_KEY = 'etax_accounts_snapshots_v1';    // 写库前自动快照
@@ -682,7 +684,9 @@
         // 浮层始终避开登录表单：宽度由 fitPanel() 按表单右缘动态计算（上限 300px）
         '#sz-tax-panel{position:fixed;top:72px;right:16px;z-index:99999;width:300px;max-width:calc(100vw - 24px);max-height:min(66vh,480px);display:flex;flex-direction:column;background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(148,163,184,.28);border-radius:12px;box-shadow:0 14px 36px rgba(15,23,42,.16),0 2px 8px rgba(15,23,42,.06);font:13px/1.5 "PingFang SC","Microsoft YaHei UI","Source Han Sans SC",sans-serif;color:#1f2937;overflow:hidden}',
         '.szl-hd{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid #eef1f5;flex:none}',
-        '.szl-hd b{font-size:13px;font-weight:600;flex:1}.szl-x{border:0;background:none;cursor:pointer;color:#94a3b8;font-size:15px;line-height:1;width:22px;height:22px;border-radius:5px}',
+        '.szl-hd b{font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.szl-x{border:0;background:none;cursor:pointer;color:#94a3b8;font-size:15px;line-height:1;width:22px;height:22px;border-radius:5px}',
+        // 版本号：排障时报给客服用；user-select:all 方便双击整段选中复制
+        '.szl-ver{flex:none;font:10px/1.4 Consolas,Monaco,monospace;color:#94a3b8;background:#f1f5f9;border-radius:4px;padding:1px 5px;user-select:all;cursor:default}',
         '.szl-x:hover{background:#f1f5f9;color:#475569}',
         '.szl-search{margin:8px 12px 6px;flex:none;position:relative}',
         '.szl-search input{width:100%;box-sizing:border-box;padding:7px 26px 7px 28px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px;outline:none;color:#1f2937;background:rgba(255,255,255,.9)}',
@@ -1043,7 +1047,7 @@
         injectStyle();
         const p = document.createElement('div'); p.id = 'sz-tax-panel';
         p.innerHTML = `
-<div class="szl-hd"><b>📋 一键填表登录</b><button class="szl-x" id="szl-x" title="关闭（Esc / 双击 P）">✕</button></div>
+<div class="szl-hd"><b>📋 一键填表登录</b><span class="szl-ver" id="szl-ver" title="当前版本 v${VERSION} · 反馈问题时请一并告知（双击可选中复制）">v${VERSION}</span><button class="szl-x" id="szl-x" title="关闭（Esc / 双击 P）">✕</button></div>
 <div class="szl-search"><span class="szl-ico">⌕</span><input id="szl-q" autocomplete="off" spellcheck="false" title="可搜：公司全称 / 简称 / 拼音简拼 / 客户编号 / 税号或手机号后 4 位" placeholder="公司名 / 简拼 / 编号 / 尾号"><button class="szl-clear" id="szl-clear" title="清空">✕</button></div>
 <div class="szl-chips" id="szl-chips"></div>
 <div class="szl-list" id="szl-list"></div>
@@ -1310,7 +1314,7 @@
     }
 
     // 供页面改版时自诊断（不参与业务逻辑）
-    try { PAGE.__szLoginDebug = { version: '16.4', build: (list) => NameIndex.build(list), search: searchIndex, normalize: NameIndex.normalize, parseBulk, normSite, License, LicNet, ensureAgencyTab, agencyEnabled }; }
+    try { PAGE.__szLoginDebug = { version: VERSION, build: (list) => NameIndex.build(list), search: searchIndex, normalize: NameIndex.normalize, parseBulk, normSite, License, LicNet, ensureAgencyTab, agencyEnabled }; }
     catch (e) { }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
