@@ -7,3 +7,7 @@ accounts.local.json
 node_modules/
 *.log
 *.tmp
+
+# 本机 CDP 诊断脚本与税局页面截图（可能带真实公司信息，禁止入库）
+diag/
+iShot_*.png
